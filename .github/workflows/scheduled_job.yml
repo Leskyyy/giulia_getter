@@ -8,9 +8,16 @@ on:
 jobs:
   log-timestamp:
     runs-on: ubuntu-latest
+    # Add permissions block here:
+    permissions:
+      contents: write   # Crucial for push access
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        # Add token configuration:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -22,8 +29,12 @@ jobs:
 
     - name: Commit and push log updates
       run: |
+        # Fetch latest changes to avoid conflicts
+        git pull origin main
+        
         git config user.name "github-actions"
         git config user.email "actions@users.noreply.github.com"
         git add logs/
-        git commit -m "Add latest execution logs" || echo "No changes to commit"
-        git push
+        # Use --allow-empty to prevent exit code 1 when no changes
+        git commit -m "Add latest execution logs" --allow-empty
+        git push origin main
